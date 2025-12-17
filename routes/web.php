@@ -34,3 +34,7 @@ Route::get('/sapa/{semua?}', function ($nama = "semua") {
     return "Halo, $nama! Selamat datang di Toko Online.";
     // ↑ "$nama" = Variable interpolation (masukkan nilai $nama ke string)
 });
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

@@ -9,7 +9,7 @@ return new class extends Migration
 {
     /**
      * Jalankan migration.
-     * Method ini dipanggil saat `php artisan migrate`
+     * Method ini dipanggil saat php artisan migrate
      */
     public function up(): void
     {
@@ -49,11 +49,7 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Rollback migration.
-     * Method ini dipanggil saat `php artisan migrate:rollback`
-     * HARUS kebalikan dari method up() - hapus kolom yang ditambahkan.
-     */
+   
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {

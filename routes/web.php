@@ -1,40 +1,57 @@
 <?php
-// ========================================
-// FILE: routes/web.php
-// FUNGSI: Mendefinisikan URL routes aplikasi
-// ========================================
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\HomeController;
 
-// Route default (sudah ada)
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', function () {
     return view('welcome');
 });
 
-// ================================================
-// TUGAS: Tambahkan route baru di bawah ini
-// ================================================
-
 Route::get('/tentang', function () {
-    // ================================================
-    // Route::get() = Tangani HTTP GET request
-    // '/tentang'   = URL yang akan dihandle
-    // function     = Kode yang dijalankan saat URL diakses
-    // ================================================
-
     return view('tentang');
-    // ↑ return view('tentang') = Tampilkan file tentang.blade.php
-    // ↑ Laravel akan mencari di: resources/views/tentang.blade.php
-});
-Route::get('/sapa/{semua?}', function ($nama = "semua") {
-    // ↑ '/sapa/{nama}' = URL pattern
-    // ↑ {nama}         = Parameter dinamis, nilainya dari URL
-    // ↑ function($nama) = Parameter diterima di function
-
-    return "Halo, $nama! Selamat datang di Toko Online.";
-    // ↑ "$nama" = Variable interpolation (masukkan nilai $nama ke string)
 });
 
+Route::get('/sapa/{nama}', function ($nama) {
+    return "Halo semua selamat datang di Toko Online.";
+});
+
+/*
+|--------------------------------------------------------------------------
+| AUTH DEFAULT LARAVEL
+|--------------------------------------------------------------------------
+*/
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+/*
+|--------------------------------------------------------------------------
+| GOOGLE AUTH
+|--------------------------------------------------------------------------
+*/
+Route::controller(GoogleController::class)->group(function () {
+    Route::get('/auth/google', 'redirect')->name('auth.google');
+    Route::get('/auth/google/callback', 'callback')->name('auth.google.callback');
+});
+
+/*
+|--------------------------------------------------------------------------
+| PROTECTED ROUTES (HARUS LOGIN)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->group(function () {
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+});
+// routes/web.php
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/profile/avatar', [ProfileController::class, 'deleteAvatar'])->name('profile.avatar.destroy');
+});

@@ -44,7 +44,8 @@ class GoogleController extends Controller
             // ===============================
             // LOGIN USER (GUARD WEB)
             // ===============================
-            Auth::guard('web')->login($user, true);
+            // ✅ Gunakan loginUsingId untuk memastikan session tidak terganggu
+            Auth::loginUsingId($user->id, true);
 
             // ===============================
             // REGENERATE SESSION
@@ -57,6 +58,7 @@ class GoogleController extends Controller
             return redirect()->route('home')
                 ->with('success', 'Berhasil login dengan Google!');
         } catch (Exception $e) {
+            // Log error supaya mudah debugging
             logger()->error('Google OAuth Error: ' . $e->getMessage());
 
             return redirect()->route('login')
@@ -108,7 +110,7 @@ class GoogleController extends Controller
             'avatar'            => $googleUser->getAvatar(),
             'email_verified_at' => now(),
             'password'          => Hash::make(Str::random(32)),
-            'role'              => 'customer',
+            'role'              => 'customer', // default role customer
         ]);
     }
 }

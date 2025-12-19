@@ -11,18 +11,6 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
-<?php
-// app/Http/Controllers/ProfileController.php
-
-namespace App\Http\Controllers;
-
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
@@ -113,6 +101,24 @@ class ProfileController extends Controller
         }
 
         return back()->with('success', 'Foto profil berhasil dihapus.');
+    }
+
+
+    /**
+     * Update password user.
+     */
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validateWithBag('updatePassword', [
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'confirmed', 'min:8'],
+        ]);
+
+        $request->user()->update([
+            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+        ]);
+
+        return back()->with('status', 'password-updated');
     }
 
     /**

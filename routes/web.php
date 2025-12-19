@@ -1,57 +1,73 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\CartController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| HALAMAN PUBLIK
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/tentang', function () {
-    return view('tentang');
-});
+Route::get('/products', [CatalogController::class, 'index'])
+    ->name('catalog.index');
 
-Route::get('/sapa/{nama}', function ($nama) {
-    return "Halo semua selamat datang di Toko Online.";
+Route::get('/products/{slug}', [CatalogController::class, 'show'])
+    ->name('catalog.show');
+
+/*
+|--------------------------------------------------------------------------
+| HALAMAN LOGIN USER
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+
+    // =========================
+    // CART
+    // =========================
+    Route::get('/cart', [CartController::class, 'index'])
+        ->name('cart.index');
+
+    Route::post('/cart/add', [CartController::class, 'add'])
+        ->name('cart.add');
+
+    Route::patch('/cart/{item}', [CartController::class, 'update'])
+        ->name('cart.update');
+
+    Route::delete('/cart/{item}', [CartController::class, 'remove'])
+        ->name('cart.remove');
+
+    // =========================
+    // WISHLIST
+    // =========================
+    Route::get('/wishlist', function () {
+        return view('wishlist.index');
+    })->name('wishlist.index');
+
+    // =========================
+    // PROFILE
+    // =========================
+    Route::get('/profile', function () {
+        return view('profile.edit');
+    })->name('profile.edit');
+
+    // =========================
+    // ORDERS
+    // =========================
+    Route::get('/orders', function () {
+        return view('orders.index');
+    })->name('orders.index');
 });
 
 /*
 |--------------------------------------------------------------------------
-| AUTH DEFAULT LARAVEL
+| AUTH ROUTES (LOGIN, LOGOUT, REGISTER)
 |--------------------------------------------------------------------------
 */
+
 Auth::routes();
-
-/*
-|--------------------------------------------------------------------------
-| GOOGLE AUTH
-|--------------------------------------------------------------------------
-*/
-Route::controller(GoogleController::class)->group(function () {
-    Route::get('/auth/google', 'redirect')->name('auth.google');
-    Route::get('/auth/google/callback', 'callback')->name('auth.google.callback');
-});
-
-/*
-|--------------------------------------------------------------------------
-| PROTECTED ROUTES (HARUS LOGIN)
-|--------------------------------------------------------------------------
-*/
-Route::middleware('auth')->group(function () {
-    Route::get('/home', [HomeController::class, 'index'])->name('home');
-});
-// routes/web.php
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::delete('/profile/avatar', [ProfileController::class, 'deleteAvatar'])->name('profile.avatar.destroy');
-});

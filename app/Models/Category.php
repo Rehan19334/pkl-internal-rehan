@@ -36,7 +36,11 @@ class Category extends Model
         // Event "creating" dipanggil sebelum model disimpan (baru)
         static::creating(function ($category) {
             if (empty($category->slug)) {
-                $category->slug = Str::slug($category->name);
+                $slug = Str::slug($category->name);
+
+                // Pastikan slug unik
+                $count = static::where('slug', 'like', "{$slug}%")->count();
+                $category->slug = $count ? "{$slug}-" . ($count + 1) : $slug;
             }
         });
 
@@ -44,7 +48,12 @@ class Category extends Model
         static::updating(function ($category) {
             // Jika nama berubah, update slug juga
             if ($category->isDirty('name')) {
-                $category->slug = Str::slug($category->name);
+                $slug = Str::slug($category->name);
+                $count = static::where('slug', 'like', "{$slug}%")
+                    ->where('id', '!=', $category->id)
+                    ->count();
+
+                $category->slug = $count ? "{$slug}-" . ($count + 1) : $slug;
             }
         });
     }
@@ -60,13 +69,15 @@ class Category extends Model
     }
 
     /**
-     * Hanya produk aktif dan tersedia.
+     * Produk aktif dalam kategori.
+     * NOTE:
+     * - Jangan tambahkan filter berat di sini
+     * - Filter stok & status sebaiknya di Controller
      */
     public function activeProducts()
     {
         return $this->hasMany(Product::class)
-                    ->where('is_active', true)
-                    ->where('stock', '>', 0);
+                    ->where('is_active', true);
     }
 
     // ==================== SCOPES ====================
@@ -84,11 +95,15 @@ class Category extends Model
 
     /**
      * Hitung jumlah produk aktif dalam kategori.
-     * Penggunaan: $category->product_count
+     * NOTE:
+     * - Gunakan withCount() di Controller untuk performa
      */
     public function getProductCountAttribute(): int
     {
-        return $this->activeProducts()->count();
+        return $this->products()
+            ->where('is_active', true)
+            ->where('stock', '>', 0)
+            ->count();
     }
 
     /**
@@ -96,9 +111,8 @@ class Category extends Model
      */
     public function getImageUrlAttribute(): string
     {
-        if ($this->image) {
-            return asset('storage/' . $this->image);
-        }
-        return asset('images/category-placeholder.png');
+        return $this->image
+            ? asset('storage/' . $this->image)
+            : asset('images/category-placeholder.png');
     }
 }

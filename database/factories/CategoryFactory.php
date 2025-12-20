@@ -1,23 +1,58 @@
 <?php
+// database/seeders/CategorySeeder.php
 
-namespace Database\Factories;
+namespace Database\Seeders;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Category;
+use Illuminate\Database\Seeder;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Category>
- */
-class CategoryFactory extends Factory
+class CategorySeeder extends Seeder
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    public function run(): void
     {
-        return [
-            //
+        $categories = [
+            [
+                'name'        => 'Elektronik',
+                'slug'        => 'elektronik',
+                'description' => 'Perangkat elektronik seperti smartphone, laptop, dan gadget lainnya',
+                'is_active'   => true,
+            ],
+            [
+                'name'        => 'Fashion Pria',
+                'slug'        => 'fashion-pria',
+                'description' => 'Pakaian, sepatu, dan aksesoris untuk pria',
+                'is_active'   => true,
+            ],
+            [
+                'name'        => 'Fashion Wanita',
+                'slug'        => 'fashion-wanita',
+                'description' => 'Pakaian, sepatu, dan aksesoris untuk wanita',
+                'is_active'   => true,
+            ],
+            [
+                'name'        => 'Makanan & Minuman',
+                'slug'        => 'makanan-minuman',
+                'description' => 'Berbagai makanan ringan, minuman, dan bahan makanan',
+                'is_active'   => true,
+            ],
+            [
+                'name'        => 'Kesehatan & Kecantikan',
+                'slug'        => 'kesehatan-kecantikan',
+                'description' => 'Produk kesehatan, skincare, dan kosmetik',
+                'is_active'   => true,
+            ],
+            [
+                'name'        => 'Rumah Tangga',
+                'slug'        => 'rumah-tangga',
+                'description' => 'Peralatan rumah tangga dan dekorasi',
+                'is_active'   => true,
+            ],
         ];
+
+        foreach ($categories as $category) {
+            Category::create($category);
+        }
+
+        $this->command->info('✅ Categories seeded successfully!');
     }
 }

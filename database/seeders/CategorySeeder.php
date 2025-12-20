@@ -1,58 +1,53 @@
 <?php
-// database/seeders/CategorySeeder.php
 
 namespace Database\Seeders;
 
 use App\Models\Category;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
         $categories = [
             [
-                'name' => 'Elektronik',
-                'slug' => 'elektronik',
-                'description' => 'Perangkat elektronik seperti smartphone, laptop, dan gadget lainnya',
+                'name' => 'Keripik & Snack Kentang',
+                'slug' => 'keripik-snack-kentang',
+                'description' => 'Koleksi keripik dan snack kentang dengan berbagai rasa',
+                'image' => null,
                 'is_active' => true,
             ],
             [
-                'name' => 'Fashion Pria',
-                'slug' => 'fashion-pria',
-                'description' => 'Pakaian, sepatu, dan aksesoris untuk pria',
+                'name' => 'Kacang & Biji-bijian',
+                'slug' => 'kacang-biji-bijian',
+                'description' => 'Berbagai jenis kacang dan biji-bijian yang gurih',
+                'image' => null,
                 'is_active' => true,
             ],
             [
-                'name' => 'Fashion Wanita',
-                'slug' => 'fashion-wanita',
-                'description' => 'Pakaian, sepatu, dan aksesoris untuk wanita',
+                'name' => 'Permen & Jelly',
+                'slug' => 'permen-jelly',
+                'description' => 'Permen dan jelly dengan berbagai rasa untuk semua umur',
+                'image' => null,
                 'is_active' => true,
             ],
             [
-                'name' => 'Makanan & Minuman',
-                'slug' => 'makanan-minuman',
-                'description' => 'Berbagai makanan ringan, minuman, dan bahan makanan',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Kesehatan & Kecantikan',
-                'slug' => 'kesehatan-kecantikan',
-                'description' => 'Produk kesehatan, skincare, dan kosmetik',
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Rumah Tangga',
-                'slug' => 'rumah-tangga',
-                'description' => 'Peralatan rumah tangga dan dekorasi',
+                'name' => 'Camilan Tradisional',
+                'slug' => 'camilan-tradisional',
+                'description' => 'Camilan tradisional Indonesia yang lezat',
+                'image' => null,
                 'is_active' => true,
             ],
         ];
 
-        foreach ($categories as $category) {
-            Category::create($category);
+        foreach ($categories as $categoryData) {
+            Category::create($categoryData);
         }
 
-        $this->command->info('✅ Categories seeded successfully!');
+        $this->command->info('Berhasil membuat ' . count($categories) . ' kategori sample.');
     }
 }

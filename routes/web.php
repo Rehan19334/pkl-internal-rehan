@@ -1,28 +1,26 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\CatalogController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\WishlistController;
-use App\Http\Controllers\OrderController;
-use App\Http\Controllers\ProfileController;
-
-use App\Http\Controllers\Auth\GoogleController;
-use App\Http\Controllers\Auth\RegisterController;
-
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WishlistController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,13 +30,13 @@ use App\Http\Controllers\Admin\UserController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/tentang', fn () => view('tentang'));
+Route::get('/tentang', fn() => view('tentang'));
 
-Route::get('/sapa/{nama}', fn ($nama) =>
+Route::get('/sapa/{nama}', fn($nama) =>
     "Halo, $nama! Selamat datang di Toko Online Raihan."
 );
 
-Route::get('/kategori/{nama?}', fn ($nama = 'Semua') =>
+Route::get('/kategori/{nama?}', fn($nama = 'Semua') =>
     "Menampilkan kategori: $nama"
 );
 
@@ -57,8 +55,8 @@ Auth::routes();
 */
 
 Route::controller(GoogleController::class)->group(function () {
-    Route::get('/auth/google', 'redirect')->name('auth.google');
-    Route::get('/auth/google/callback', 'callback')->name('auth.google.callback');
+    Route::get('/auth/google', 'redirectToGoogle')->name('auth.google');
+    Route::get('/auth/google/callback', 'handleGoogleCallback')->name('auth.google.callback');
 });
 
 /*
@@ -96,7 +94,7 @@ Route::middleware('auth')->group(function () {
     /*
     | EMAIL VERIFICATION
     */
-    Route::get('/email/verify', fn () =>
+    Route::get('/email/verify', fn() =>
         view('auth.verify-email')
     )->name('verification.notice');
 

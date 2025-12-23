@@ -63,7 +63,7 @@
                 <ul class="list-unstyled text-secondary">
                     <li class="mb-2">
                         <i class="bi bi-geo-alt me-2"></i>
-                        Jl. Contoh No. 123, Bandung
+                        Jl. Bahuan 
                     </li>
                     <li class="mb-2">
                         <i class="bi bi-telephone me-2"></i>

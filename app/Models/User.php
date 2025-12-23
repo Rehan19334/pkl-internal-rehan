@@ -1,7 +1,7 @@
 <?php
+
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -9,14 +9,9 @@ use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    // Kolom yang bisa diisi massal
     protected $fillable = [
         'name',
         'email',
@@ -28,138 +23,108 @@ class User extends Authenticatable
         'address',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+    // Kolom yang disembunyikan saat serialize
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    // Casting atribut
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
+            'password' => 'hashed',
         ];
     }
 
-    /**
-     * User memiliki satu keranjang aktif.
-     */
-    public function cart()
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONSHIPS
+    |--------------------------------------------------------------------------
+    */
+
+    // User bisa punya banyak item di cart
+    public function cartItems()
     {
-        return $this->hasOne(Cart::class);
+        return $this->hasMany(Cart::class);
     }
 
-    /**
-     * User memiliki banyak item wishlist.
-     */
+    // Relasi User ke Product melalui tabel wishlists
     public function wishlists()
     {
-        return $this->hasMany(Wishlist::class);
+        return $this->belongsToMany(Product::class, 'wishlists')
+                    ->withTimestamps();
     }
 
-    /**
-     * User memiliki banyak pesanan.
-     */
+    // Relasi User ke Order
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
 
-    /**
-     * Relasi many-to-many ke products melalui wishlists.
-     */
-    public function wishlistProducts()
-    {
-        return $this->belongsToMany(Product::class, 'wishlists')
-            ->withTimestamps();
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | ROLE HELPERS
+    |--------------------------------------------------------------------------
+    */
 
-    // ==================== HELPER METHODS ====================
-
-    /**
-     * Cek apakah user adalah admin.
-     */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
-    /**
-     * Cek apakah user adalah customer.
-     */
     public function isCustomer(): bool
     {
         return $this->role === 'customer';
     }
 
-    /**
-     * Cek apakah produk ada di wishlist user.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | WISHLIST HELPER
+    |--------------------------------------------------------------------------
+    */
+
+    // Cek apakah user sudah wishlist produk tertentu
     public function hasInWishlist(Product $product): bool
     {
-        return $this->wishlists()
-            ->where('product_id', $product->id)
-            ->exists();
+        return $this->wishlists()->where('product_id', $product->id)->exists();
     }
 
-    // Tambahkan accessor untuk avatar URL
+    /*
+    |--------------------------------------------------------------------------
+    | AVATAR ACCESSORS
+    |--------------------------------------------------------------------------
+    */
 
-/**
- * Get the avatar URL.
- * Accessor ini otomatis dipanggil saat kita akses $user->avatar_url
- * Logika Prioritas:
- * 1. Cek Storage Lokal: Apakah user upload file custom? Jika ya, return URL local storage.
- * 2. Cek URL Eksternal: Apakah user login via Google? Jika ya, return URL dari Google.
- * 3. Fallback: Gunakan Gravatar berdasarkan hash email agar user tidak tampil polos.
- */
+    // URL avatar user
     public function getAvatarUrlAttribute(): string
     {
-        // Prioritas 1: Avatar yang di-upload (file fisik ada di server)
-        // Kita harus cek Storage::exists() agar tidak broken image jika file-nya terhapus manual.
+        // Avatar lokal
         if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
             return asset('storage/' . $this->avatar);
         }
 
-        // Prioritas 2: Avatar dari Google (URL eksternal dimulai dengan http)
-        // Biasanya ini terjadi saat user login via Socialite (Google Sign-In).
-        if (str_starts_with($this->avatar ?? '', 'http')) {
+        // Avatar dari Google
+        if ($this->avatar && str_starts_with($this->avatar, 'http')) {
             return $this->avatar;
         }
 
-        // Prioritas 3: Gravatar (Layanan sedunia untuk avatar berdasarkan email)
-        // Gravatar menggunakan MD5 hash dari email lowercase.
-        // Jika user belum punya gravatar, tampilkan 'mp' (Mystery Person).
-        // &s=200 artinya size gambar 200x200px.
+        // Fallback Gravatar
         $hash = md5(strtolower(trim($this->email)));
         return "https://www.gravatar.com/avatar/{$hash}?d=mp&s=200";
     }
 
-/**
- * Get initials from name for avatar fallback.
- * Contoh: "Agung Wahyudi" -> "AW"
- * Berguna jika kita ingin membuat UI avatar berupa inisial huruf teks.
- */
+    // Inisial nama user (fallback avatar teks)
     public function getInitialsAttribute(): string
     {
-        $words    = explode(' ', $this->name);
+        $words = explode(' ', trim($this->name));
         $initials = '';
 
         foreach ($words as $word) {
-            // Ambil huruf pertama tiap kata dan kapitalkan
             $initials .= strtoupper(substr($word, 0, 1));
         }
 
-        // Ambil maksimal 2 huruf pertama saja
         return substr($initials, 0, 2);
     }
 }

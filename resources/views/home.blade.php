@@ -25,8 +25,8 @@
                     </a>
                 </div>
                 <div class="col-lg-6 d-none d-lg-block text-center">
-                    <img src="{{ asset('images/1.jpg') }}"
-                         alt="Shopping" class="img-fluid" style="max-height: 400px;">
+                    <img src="{{ asset('images/i.jpg') }}"
+                         alt="Shopping" class="img-fluid" style="max-height: 100px;">
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 {{-- ================================================
      FILE: resources/views/partials/navbar.blade.php
      FUNGSI: Navigation bar untuk customer
-     ================================================ --}}
+================================================ --}}
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
     <div class="container">
@@ -20,6 +20,7 @@
 
         {{-- Navbar Content --}}
         <div class="collapse navbar-collapse" id="navbarMain">
+
             {{-- Search Form --}}
             <form class="d-flex mx-auto" style="max-width: 400px; width: 100%;"
                   action="{{ route('catalog.index') }}" method="GET">
@@ -36,6 +37,7 @@
 
             {{-- Right Menu --}}
             <ul class="navbar-nav ms-auto align-items-center">
+
                 {{-- Katalog --}}
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('catalog.index') }}">
@@ -44,17 +46,22 @@
                 </li>
 
                 @auth
-                    {{-- Wishlist --}}
-                    <li class="nav-item">
-                        <a class="nav-link position-relative" href="{{ route('wishlist.index') }}">
-                            <i class="bi bi-heart"></i>
-                            @if(auth()->user()->wishlists()->count() > 0)
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
-                                    {{ auth()->user()->wishlists()->count() }}
-                                </span>
-                            @endif
-                        </a>
-                    </li>
+                    {{-- Wishlist (cek dulu route) --}}
+                    @if(Route::has('wishlist.index'))
+                        <li class="nav-item">
+                             <a class="nav-link position-relative" href="{{ route('wishlist.index') }}">
+                                <i class="bi bi-heart"></i>
+                                @php
+                                    $wishlistCount = auth()->user()->wishlists()->count() ?? 0;
+                                @endphp
+                                @if($wishlistCount > 0)
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                                        {{ $wishlistCount }}
+                                    </span>
+                                @endif
+                            </a>
+                        </li>
+                    @endif
 
                     {{-- Cart --}}
                     <li class="nav-item">
@@ -84,15 +91,16 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                 <a class="dropdown-item" href="{{ route('profile.edit') }}">
                                     <i class="bi bi-person me-2"></i> Profil Saya
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ route('orders.index') }}">
+                                 <a class="dropdown-item" href="{{ route('orders.index') }}"> 
                                     <i class="bi bi-bag me-2"></i> Pesanan Saya
                                 </a>
                             </li>
+
                             @if(auth()->user()->isAdmin())
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
@@ -101,6 +109,7 @@
                                     </a>
                                 </li>
                             @endif
+
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
@@ -112,6 +121,7 @@
                             </li>
                         </ul>
                     </li>
+
                 @else
                     {{-- Guest Links --}}
                     <li class="nav-item">

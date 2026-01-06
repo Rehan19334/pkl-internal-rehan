@@ -13,8 +13,8 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('user_id')
-                  ->constrained()
-                  ->cascadeOnDelete();
+                ->constrained()
+                ->cascadeOnDelete();
 
             // Nomor order unik (contoh: ORD-20241210-ABC123)
             $table->string('order_number', 50)->unique();
@@ -27,11 +27,11 @@ return new class extends Migration
 
             // Status pesanan
             $table->enum('status', [
-                'pending',      // Menunggu pembayaran
-                'processing',   // Pembayaran diterima, sedang diproses
-                'shipped',      // Sudah dikirim
-                'delivered',    // Sudah diterima
-                'cancelled'     // Dibatalkan
+                'pending',    // Menunggu pembayaran
+                'processing', // Pembayaran diterima, sedang diproses
+                'shipped',    // Sudah dikirim
+                'delivered',  // Sudah diterima
+                'cancelled',  // Dibatalkan
             ])->default('pending');
 
             // Alamat pengiriman (snapshot saat order)

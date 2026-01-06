@@ -8,6 +8,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
@@ -35,7 +36,7 @@ class HomeController extends Controller
             }])
             ->having('active_products_count', '>', 0) // Hanya yang punya produk
             ->orderBy('name')
-            ->take(6) // Batasi 6 kategori
+            ->take(8) // Batasi 8 kategori
             ->get();
 
         // ================================================
@@ -44,7 +45,8 @@ class HomeController extends Controller
         // - Aktif dan ada stok
         // ================================================
         $featuredProducts = Product::query()
-            ->with(['category', 'primaryImage']) // Eager load untuk performa
+            ->select('id', 'name', 'slug', 'price', 'discount_price', 'category_id', 'is_featured') // Select only needed columns
+            ->with(['category:id,name,slug', 'primaryImage:id,image_path,product_id']) // Eager load with specific columns
             ->active()                           // Scope: is_active = true
             ->inStock()                          // Scope: stock > 0
             ->featured()                         // Scope: is_featured = true

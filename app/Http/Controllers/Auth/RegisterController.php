@@ -7,11 +7,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;                           // Model User untuk berinteraksi dengan tabel users
+use App\Models\User;                    // Model User untuk berinteraksi dengan tabel users
 use Illuminate\Foundation\Auth\RegistersUsers; // Trait Laravel untuk logic registrasi
-use Illuminate\Support\Facades\Hash;           // Facade Hash untuk enkripsi password
-use Illuminate\Support\Facades\Validator;
-// Facade Validator untuk validasi input
+use Illuminate\Support\Facades\Hash;    // Facade Hash untuk enkripsi password
+use Illuminate\Support\Facades\Validator; // Facade Validator untuk validasi input
 
 class RegisterController extends Controller
 {
@@ -53,10 +52,10 @@ class RegisterController extends Controller
         return Validator::make($data, [
             // RULES VALIDASI
 
-            'name'     => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             // ↑ Nama wajib, string, maksimal 255 char
 
-            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             // ↑ unique:users = Cek tabel 'users', kolom 'email'.
             //   Jika email sudah ada, validasi gagal. PENTING!
 
@@ -67,10 +66,10 @@ class RegisterController extends Controller
 
         ], [
             // CUSTOM MESSAGES
-            'name.required'      => 'Nama wajib diisi.',
-            'email.required'     => 'Email wajib diisi.',
-            'email.unique'       => 'Email sudah terdaftar. Gunakan email lain.',
-            'password.min'       => 'Password minimal 8 karakter agar aman.',
+            'name.required'     => 'Nama wajib diisi.',
+            'email.required'    => 'Email wajib diisi.',
+            'email.unique'      => 'Email sudah terdaftar. Gunakan email lain.',
+            'password.min'      => 'Password minimal 8 karakter agar aman.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
     }

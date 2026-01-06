@@ -1,4 +1,5 @@
 <?php
+// app/Models/User.php
 
 namespace App\Models;
 
@@ -11,7 +12,10 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    // Kolom yang bisa diisi massal
+    /**
+     * Kolom yang boleh diisi secara mass-assignment.
+     * Ini mencegah vulnerability mass-assignment.
+     */
     protected $fillable = [
         'name',
         'email',
@@ -21,110 +25,156 @@ class User extends Authenticatable
         'google_id',
         'phone',
         'address',
+        
+            
+
     ];
 
-    // Kolom yang disembunyikan saat serialize
+    /**
+     * Kolom yang disembunyikan saat serialisasi ke JSON/array.
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    // Casting atribut
+    /**
+     * Casting tipe data otomatis.
+     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | RELATIONSHIPS
-    |--------------------------------------------------------------------------
-    */
+    // ==================== RELATIONSHIPS ====================
 
-    // User bisa punya banyak item di cart
-    public function cartItems()
+    /**
+     * User memiliki satu keranjang aktif.
+     */
+    public function cart()
     {
-        return $this->hasMany(Cart::class);
+        return $this->hasOne(Cart::class);
     }
 
-    // Relasi User ke Product melalui tabel wishlists
+    /**
+     * Relasi many-to-many ke products melalui wishlists.
+     */
     public function wishlists()
     {
+        // Relasi User ke Product melalui tabel wishlists
         return $this->belongsToMany(Product::class, 'wishlists')
-                    ->withTimestamps();
+                    ->withTimestamps(); // Agar created_at/updated_at di pivot terisi
     }
 
-    // Relasi User ke Order
+    /**
+     * User memiliki banyak pesanan.
+     */
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | ROLE HELPERS
-    |--------------------------------------------------------------------------
-    */
 
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Cek apakah user adalah admin.
+     */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
+    /**
+     * Cek apakah user adalah customer.
+     */
     public function isCustomer(): bool
     {
         return $this->role === 'customer';
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | WISHLIST HELPER
-    |--------------------------------------------------------------------------
-    */
-
-    // Cek apakah user sudah wishlist produk tertentu
-    public function hasInWishlist(Product $product): bool
+    /**
+     * Helper untuk cek apakah user sudah wishlist produk tertentu
+     */
+    public function hasInWishlist(Product $product)
     {
         return $this->wishlists()->where('product_id', $product->id)->exists();
     }
+// ========================================
+// FILE: app/Models/User.php (bagian yang perlu diupdate)
+// ========================================
 
-    /*
-    |--------------------------------------------------------------------------
-    | AVATAR ACCESSORS
-    |--------------------------------------------------------------------------
-    */
 
-    // URL avatar user
-    public function getAvatarUrlAttribute(): string
-    {
-        // Avatar lokal
-        if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
-            return asset('storage/' . $this->avatar);
-        }
+    // Tambahkan google_id dan avatar ke fillable
+// app/Models/User.php
 
-        // Avatar dari Google
-        if ($this->avatar && str_starts_with($this->avatar, 'http')) {
-            return $this->avatar;
-        }
+// Tambahkan accessor untuk avatar URL
 
-        // Fallback Gravatar
-        $hash = md5(strtolower(trim($this->email)));
-        return "https://www.gravatar.com/avatar/{$hash}?d=mp&s=200";
+/**
+ * Get the avatar URL.
+ * Accessor ini otomatis dipanggil saat kita akses $user->avatar_url
+ * Logika Prioritas:
+ * 1. Cek Storage Lokal: Apakah user upload file custom? Jika ya, return URL local storage.
+ * 2. Cek URL Eksternal: Apakah user login via Google? Jika ya, return URL dari Google.
+ * 3. Fallback: Gunakan Gravatar berdasarkan hash email agar user tidak tampil polos.
+ */
+// app/Models/User.php
+
+// Tambahkan accessor untuk avatar URL
+
+/**
+ * Get the avatar URL.
+ * Accessor ini otomatis dipanggil saat kita akses $user->avatar_url
+ * Logika Prioritas:
+ * 1. Cek Storage Lokal: Apakah user upload file custom? Jika ya, return URL local storage.
+ * 2. Cek URL Eksternal: Apakah user login via Google? Jika ya, return URL dari Google.
+ * 3. Fallback: Gunakan Gravatar berdasarkan hash email agar user tidak tampil polos.
+ */
+public function getAvatarUrlAttribute(): string
+{
+    // Prioritas 1: Avatar yang di-upload (file fisik ada di server)
+    // Kita harus cek Storage::exists() agar tidak broken image jika file-nya terhapus manual.
+    if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
+        return asset('storage/' . $this->avatar);
     }
 
-    // Inisial nama user (fallback avatar teks)
-    public function getInitialsAttribute(): string
-    {
-        $words = explode(' ', trim($this->name));
-        $initials = '';
-
-        foreach ($words as $word) {
-            $initials .= strtoupper(substr($word, 0, 1));
-        }
-
-        return substr($initials, 0, 2);
+    // Prioritas 2: Avatar dari Google (URL eksternal dimulai dengan http)
+    // Biasanya ini terjadi saat user login via Socialite (Google Sign-In).
+    if (str_starts_with($this->avatar ?? '', 'http')) {
+        return $this->avatar;
     }
+
+    // Prioritas 3: Gravatar (Layanan sedunia untuk avatar berdasarkan email)
+    // Gravatar menggunakan MD5 hash dari email lowercase.
+    // Jika user belum punya gravatar, tampilkan 'mp' (Mystery Person).
+    // &s=200 artinya size gambar 200x200px.
+    $hash = md5(strtolower(trim($this->email)));
+    return "https://www.gravatar.com/avatar/{$hash}?d=mp&s=200";
+}
+
+/**
+ * Get initials from name for avatar fallback.
+ * Contoh: "Agung Wahyudi" -> "AW"
+ * Berguna jika kita ingin membuat UI avatar berupa inisial huruf teks.
+ */
+public function getInitialsAttribute(): string
+{
+    $words = explode(' ', $this->name);
+    $initials = '';
+
+    foreach ($words as $word) {
+        // Ambil huruf pertama tiap kata dan kapitalkan
+        $initials .= strtoupper(substr($word, 0, 1));
+    }
+
+    // Ambil maksimal 2 huruf pertama saja
+    return substr($initials, 0, 2);
+}
+
+
+
 }

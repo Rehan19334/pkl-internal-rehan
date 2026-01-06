@@ -1,4 +1,4 @@
-REGISTER {{-- ======================================== FILE:
+{{-- ======================================== FILE:
 resources/views/auth/login.blade.php FUNGSI: Halaman form login
 ======================================== --}} @extends('layouts.app') {{-- ↑
 Menggunakan layout dari layouts/app.blade.php Halaman ini akan "masuk" ke bagian

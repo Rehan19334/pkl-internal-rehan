@@ -5,7 +5,6 @@
 // ========================================
 
 namespace App\Http\Controllers\Auth;
-
 // ↑ Namespace adalah "alamat" file ini dalam struktur folder
 // App\Http\Controllers\Auth berarti file ada di app/Http/Controllers/Auth/
 
@@ -13,7 +12,6 @@ use App\Http\Controllers\Controller;
 // ↑ Import class Controller sebagai parent class
 
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
-
 // ↑ Import trait yang berisi logic login (attempt, logout, dll)
 // Trait adalah kumpulan method yang bisa di-reuse oleh banyak class
 
@@ -120,16 +118,16 @@ class LoginController extends Controller
             // ↑ required = wajib diisi
             // ↑ email    = format harus valid (ada @ dan .)
 
-            'password'        => 'required|string|min:6',
+            'password' => 'required|string|min:6',
             // ↑ min:6 = minimal 6 karakter (opsional, untuk security dasar)
         ], [
             // ================================================
             // CUSTOM ERROR MESSAGES (Bahasa Indonesia)
             // ================================================
-            'email.required'    => 'Email wajib diisi.',
-            'email.email'       => 'Format email tidak valid (harus ada @).',
+            'email.required' => 'Email wajib diisi.',
+            'email.email'    => 'Format email tidak valid (harus ada @).',
             'password.required' => 'Password wajib diisi.',
-            'password.min'      => 'Password minimal 6 karakter.',
+            'password.min'   => 'Password minimal 6 karakter.',
         ]);
     }
 }

@@ -14,11 +14,10 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        // Event Login akan memanggil listener MergeCartListener
-        Login::class => [
-            MergeCartListener::class,
-        ],
-    ];
+    Login::class => [
+        MergeCartListener::class,
+    ],
+];
 
     /**
      * Register any events for your application.

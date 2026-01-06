@@ -46,7 +46,24 @@ Route::get('/kategori/{nama?}', fn($nama = 'Semua') =>
 |--------------------------------------------------------------------------
 */
 
-Auth::routes();
+// Override default auth routes to add rate limiting
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'])->middleware('throttle:5,1')->name('login');
+    Route::get('/register', [App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [App\Http\Controllers\Auth\RegisterController::class, 'register']);
+    Route::get('/password/reset', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/password/email', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/password/reset/{token}', [App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/password/reset', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
+    Route::get('/password/confirm', [App\Http\Controllers\Auth\ConfirmPasswordController::class, 'showConfirmForm'])->name('password.confirm');
+    Route::post('/password/confirm', [App\Http\Controllers\Auth\ConfirmPasswordController::class, 'confirm']);
+});
+
+// Logout route for authenticated users
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -55,8 +72,11 @@ Auth::routes();
 */
 
 Route::controller(GoogleController::class)->group(function () {
-    Route::get('/auth/google', 'redirectToGoogle')->name('auth.google');
-    Route::get('/auth/google/callback', 'handleGoogleCallback')->name('auth.google.callback');
+    // Redirect ke Google OAuth
+    Route::get('/auth/google', 'redirect')->name('auth.google');
+
+    // Callback setelah login Google
+    Route::get('/auth/google/callback', 'callback')->name('auth.google.callback');
 });
 
 /*
@@ -134,6 +154,16 @@ Route::middleware('auth')->group(function () {
     */
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+    /*
+    | PAYMENT
+    */
+    Route::get('/orders/{order}/pay', [App\Http\Controllers\PaymentController::class, 'show'])
+        ->name('orders.pay');
+    Route::get('/orders/{order}/success', [App\Http\Controllers\PaymentController::class, 'success'])
+        ->name('orders.success');
+    Route::get('/orders/{order}/pending', [App\Http\Controllers\PaymentController::class, 'pending'])
+        ->name('orders.pending');
 });
 
 /*
@@ -159,6 +189,8 @@ Route::middleware(['auth', 'admin'])
 
         Route::get('reports/sales', [ReportController::class, 'sales'])
             ->name('reports.sales');
+        Route::get('reports/export-sales', [ReportController::class, 'exportSales'])
+            ->name('reports.export-sales');
 
         Route::get('users', [UserController::class, 'index'])
             ->name('users.index');
@@ -166,12 +198,66 @@ Route::middleware(['auth', 'admin'])
 
 /*
 |--------------------------------------------------------------------------
-| GUEST ROUTES
+| MIDTRANS DEBUG & WEBHOOK
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('guest')->group(function () {
-    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])
-        ->name('register');
-    Route::post('/register', [RegisterController::class, 'register']);
+use App\Services\MidtransService;
+use App\Http\Controllers\MidtransNotificationController;
+
+// Debug testing Midtrans (HAPUS SETELAH TESTING!)
+Route::get('/debug-midtrans', function () {
+    $config = [
+        'merchant_id'   => config('midtrans.merchant_id'),
+        'client_key'    => config('midtrans.client_key'),
+        'server_key'    => config('midtrans.server_key') ? '***SET***' : 'NOT SET',
+        'is_production' => config('midtrans.is_production'),
+    ];
+
+    try {
+        $service = new MidtransService();
+
+        $dummyOrder                   = new \App\Models\Order();
+        $dummyOrder->order_number     = 'TEST-' . time();
+        $dummyOrder->total_amount     = 10000;
+        $dummyOrder->shipping_cost    = 0;
+        $dummyOrder->shipping_name    = 'Test User';
+        $dummyOrder->shipping_phone   = '08123456789';
+        $dummyOrder->shipping_address = 'Jl. Test No. 123';
+        $dummyOrder->user             = (object) [
+            'name'  => 'Tester',
+            'email' => 'test@example.com',
+            'phone' => '08123456789',
+        ];
+
+        $dummyOrder->items = collect([
+            (object) [
+                'product_id'   => 1,
+                'product_name' => 'Produk Test',
+                'price'        => 10000,
+                'quantity'     => 1,
+            ],
+        ]);
+
+        $token = $service->createSnapToken($dummyOrder);
+
+        return response()->json([
+            'status'  => 'SUCCESS',
+            'message' => 'Berhasil terhubung ke Midtrans!',
+            'config'  => $config,
+            'token'   => $token,
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status'  => 'ERROR',
+            'message' => $e->getMessage(),
+            'config'  => $config,
+        ], 500);
+    }
 });
+
+// MIDTRANS WEBHOOK (PUBLIC ROUTE)
+Route::post('midtrans/notification', [MidtransNotificationController::class, 'handle'])
+    ->name('midtrans.notification');
+

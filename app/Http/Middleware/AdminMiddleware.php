@@ -26,7 +26,7 @@ class AdminMiddleware
         // ================================================
         // STEP 1: Cek apakah user sudah login
         // ================================================
-        if (! auth()->check()) {
+        if (!auth()->check()) {
             // auth()->check() = return true jika sudah login, false jika belum
             // !auth()->check() = NOT login = belum login
 

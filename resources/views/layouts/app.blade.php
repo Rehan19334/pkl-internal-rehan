@@ -123,7 +123,60 @@
          HASIL: Kedua block ditampilkan --}}
 </head>
 
-<script>
+<body>
+    @include('partials.navbar')
+    {{-- ↑ DIRECTIVE @include() - Menyisipkan File Lain
+
+         Sama seperti copy-paste isi file ke sini
+
+         @include('partials.navbar') artinya:
+         Sisipkan file: resources/views/partials/navbar.blade.php
+
+         PATH MENGGUNAKAN DOT NOTATION:
+         partials.navbar = partials/navbar.blade.php
+         admin.products.form = admin/products/form.blade.php
+
+         PASSING DATA KE INCLUDE:
+         @include('partials.product-card', ['product' => $item])
+         Variabel $product tersedia di dalam product-card.blade.php
+
+         BEDANYA DENGAN @extends:
+         - @extends: inheritance (parent-child relationship)
+         - @include: composition (menyisipkan partial/fragment) --}}
+
+    <div class="container mt-3">
+        @include('partials.flash-messages')
+    </div>
+
+    <main class="min-vh-100">
+    {{-- ↑ min-vh-100 = minimum 100% viewport height
+           Agar footer tetap di bawah meski konten sedikit --}}
+
+        @yield('content')
+        {{-- ↑ CONTENT UTAMA dari child template
+
+             Di child:
+             @section('content')
+                 <h1>Selamat Datang</h1>
+                 <p>Ini konten halaman</p>
+             @endsection
+
+             @yield('content') akan diganti dengan semua konten
+             di dalam @section('content') child --}}
+    </main>
+
+    @include('partials.footer')
+
+    @stack('scripts')
+    {{-- ↑ Tempat menumpuk JavaScript dari child
+
+         Child bisa push script khusus untuk halaman itu:
+         @push('scripts')
+         <script>
+             console.log('Ini hanya di halaman detail produk');
+         </script>
+         @endpush --}}
+         <script>
   /**
    * Fungsi AJAX untuk Toggle Wishlist
    * Menggunakan Fetch API (Modern JS) daripada jQuery.
@@ -191,58 +244,5 @@
     }
   }
 </script>
-<body>
-    @include('partials.navbar')
-    {{-- ↑ DIRECTIVE @include() - Menyisipkan File Lain
-
-         Sama seperti copy-paste isi file ke sini
-
-         @include('partials.navbar') artinya:
-         Sisipkan file: resources/views/partials/navbar.blade.php
-
-         PATH MENGGUNAKAN DOT NOTATION:
-         partials.navbar = partials/navbar.blade.php
-         admin.products.form = admin/products/form.blade.php
-
-         PASSING DATA KE INCLUDE:
-         @include('partials.product-card', ['product' => $item])
-         Variabel $product tersedia di dalam product-card.blade.php
-
-         BEDANYA DENGAN @extends:
-         - @extends: inheritance (parent-child relationship)
-         - @include: composition (menyisipkan partial/fragment) --}}
-
-    <div class="container mt-3">
-        @include('partials.flash-messages')
-    </div>
-
-    <main class="min-vh-100">
-    {{-- ↑ min-vh-100 = minimum 100% viewport height
-           Agar footer tetap di bawah meski konten sedikit --}}
-
-        @yield('content')
-        {{-- ↑ CONTENT UTAMA dari child template
-
-             Di child:
-             @section('content')
-                 <h1>Selamat Datang</h1>
-                 <p>Ini konten halaman</p>
-             @endsection
-
-             @yield('content') akan diganti dengan semua konten
-             di dalam @section('content') child --}}
-    </main>
-
-    @include('partials.footer')
-
-    @stack('scripts')
-    {{-- ↑ Tempat menumpuk JavaScript dari child
-
-         Child bisa push script khusus untuk halaman itu:
-         @push('scripts')
-         <script>
-             console.log('Ini hanya di halaman detail produk');
-         </script>
-         @endpush --}}
 </body>
 </html>

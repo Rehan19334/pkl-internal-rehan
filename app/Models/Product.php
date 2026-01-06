@@ -168,7 +168,7 @@ class Product extends Model
             return $image->image_url;
         }
 
-        return asset('images/V.png');
+        return asset('images/no-product-image.jpg');
     }
 
     /**

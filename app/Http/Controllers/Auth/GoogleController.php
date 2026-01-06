@@ -5,18 +5,16 @@
 // ========================================
 
 namespace App\Http\Controllers\Auth;
-
 // ↑ Namespace adalah "alamat" file dalam struktur folder
 // File ini berada di app/Http/Controllers/Auth/
 
-use App\Http\Controllers\Controller; // Base controller
-use App\Models\User;                 // Model User untuk interaksi database
-use Exception;                       // Facade untuk authentication
-use Illuminate\Support\Facades\Auth; // Facade untuk hashing password
-use Illuminate\Support\Facades\Hash; // Helper untuk string manipulation
-use Illuminate\Support\Str;          // ⭐ Package Socialite untuk OAuth
-use Laravel\Socialite\Facades\Socialite;
-// Class untuk handle error
+use App\Http\Controllers\Controller;  // Base controller
+use App\Models\User;                   // Model User untuk interaksi database
+use Illuminate\Support\Facades\Auth;   // Facade untuk authentication
+use Illuminate\Support\Facades\Hash;   // Facade untuk hashing password
+use Illuminate\Support\Str;             // Helper untuk string manipulation
+use Laravel\Socialite\Facades\Socialite; // ⭐ Package Socialite untuk OAuth
+use Exception;                          // Class untuk handle error
 
 class GoogleController extends Controller
 {
@@ -30,7 +28,7 @@ class GoogleController extends Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function redirectToGoogle()
+    public function redirect()
     {
         // ================================================
         // MEMBANGUN URL REDIRECT KE GOOGLE
@@ -41,20 +39,20 @@ class GoogleController extends Controller
         // ================================================
 
         return Socialite::driver('google')
-        // ->stateless() // Opsional: Gunakan jika error "InvalidStateException" terus muncul (bypass session state check)
+            // ->stateless() // Opsional: Gunakan jika error "InvalidStateException" terus muncul (bypass session state check)
             ->scopes(['email', 'profile'])
-        // ↑ Scopes menentukan data apa yang kita minta
-        // 'email'   = Alamat email user
-        // 'profile' = Nama dan foto profil
-        // 'openid'  = Otomatis ditambahkan untuk Google
+            // ↑ Scopes menentukan data apa yang kita minta
+            // 'email'   = Alamat email user
+            // 'profile' = Nama dan foto profil
+            // 'openid'  = Otomatis ditambahkan untuk Google
             ->redirect();
-        // ↑ Ini akan redirect ke URL seperti:
-        // https://accounts.google.com/o/oauth2/v2/auth?
-        //   client_id=xxx&
-        //   redirect_uri=xxx&
-        //   scope=email+profile&
-        //   state=xxx&
-        //   response_type=code
+            // ↑ Ini akan redirect ke URL seperti:
+            // https://accounts.google.com/o/oauth2/v2/auth?
+            //   client_id=xxx&
+            //   redirect_uri=xxx&
+            //   scope=email+profile&
+            //   state=xxx&
+            //   response_type=code
     }
 
     /**
@@ -67,7 +65,7 @@ class GoogleController extends Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function handleGoogleCallback()
+    public function callback()
     {
         // ================================================
         // CEK JIKA USER MEMBATALKAN LOGIN
@@ -145,7 +143,7 @@ class GoogleController extends Controller
                 // ↑ intended() = Redirect ke halaman yang coba diakses sebelumnya
                 // Jika tidak ada, redirect ke 'home'
                 ->with('success', 'Berhasil login dengan Google!');
-            // ↑ Flash message sukses
+                // ↑ Flash message sukses
 
         } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
             // ================================================
@@ -244,10 +242,10 @@ class GoogleController extends Controller
             // Link akun Google ke user yang sudah ada
 
             $user->update([
-                'google_id'         => $googleUser->getId(),
+                'google_id' => $googleUser->getId(),
                 // ↑ Simpan Google ID untuk login berikutnya
 
-                'avatar'            => $googleUser->getAvatar() ?? $user->avatar,
+                'avatar' => $googleUser->getAvatar() ?? $user->avatar,
                 // ↑ Update avatar (gunakan yang lama jika Google tidak ada)
 
                 'email_verified_at' => $user->email_verified_at ?? now(),
@@ -264,28 +262,28 @@ class GoogleController extends Controller
         // ================================================
 
         return User::create([
-            'name'              => $googleUser->getName(),
+            'name' => $googleUser->getName(),
             // ↑ Nama dari profil Google
 
-            'email'             => $googleUser->getEmail(),
+            'email' => $googleUser->getEmail(),
             // ↑ Email dari Google (verified)
 
-            'google_id'         => $googleUser->getId(),
+            'google_id' => $googleUser->getId(),
             // ↑ Google ID untuk login berikutnya
 
-            'avatar'            => $googleUser->getAvatar(),
+            'avatar' => $googleUser->getAvatar(),
             // ↑ URL foto profil dari Google
 
             'email_verified_at' => now(),
             // ↑ Langsung verified karena Google sudah verifikasi
 
-            'password'          => Hash::make(Str::random(24)),
+            'password' => Hash::make(Str::random(24)),
             // ↑ Generate password random karena user login via Google
             // Str::random(24) = String acak 24 karakter
             // Hash::make()    = Enkripsi agar tidak bisa dibaca
             // User tidak perlu tahu password ini karena login via Google
 
-            'role'              => 'customer',
+            'role' => 'customer',
             // ↑ Role default untuk user baru
         ]);
     }
